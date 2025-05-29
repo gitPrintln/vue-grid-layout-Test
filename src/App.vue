@@ -1,4 +1,16 @@
 <template>
+    <div>
+        <button onclick="window.print()">인쇄하기</button>
+    </div>
+    <hr/>
+    <div ref="pdfContent" class="pdf-content">
+      <h1>Vue3에서 PDF 내보내기 예제</h1>
+      <p>이 부분이 PDF로 저장됩니다.</p>
+    </div>
+    <button @click="downloadPdf">PDF 저장하기</button>
+    <hr/>
+    <button @click="nowTime"></button>
+    <hr/>
     <div style="width:100%;">
         <div>
             <div class="layoutJSON">
@@ -37,10 +49,46 @@
             </grid-layout>
         </div>
     </div>
+    <div>
+        <div>
+            <button @click="goToAbout">다운로드 페이지로 이동</button>
+        </div>
+    </div>
+    <v-app>
+        <v-main>
+            <v-container>
+                <v-data-table
+                :headers="headers"
+                :items="users"
+                class="elevation-1"
+                ></v-data-table>
+            </v-container>
+        </v-main>
+    </v-app>
 </template>
 
 <script>
 import TestElement from './components/TestElement.vue';
+import { jsPDF } from 'jspdf';
+import moment from 'moment';
+import 'moment/locale/ko';   // 한국어 로케일 가져오기
+
+moment.locale('ko');
+console.log('현재 로케일:', moment.locale()); // ko
+console.log('요일:', moment().format('dddd')); // 수요일
+console.log('전체:', moment().format('LLLL')); // 2025년 5월 28일 수요일 오후 ...
+
+
+const headers = [
+  { text: '이름', value: 'name' },
+  { text: '이메일', value: 'email' },
+  { text: '가입일', value: 'joined' }
+]
+
+const users = [
+  { name: '홍길동', email: 'hong@example.com', joined: '2024-01-01' },
+  { name: '김철수', email: 'kim@example.com', joined: '2024-02-10' }
+]
 
 const testLayout = [
     {"x":0,"y":0,"w":2,"h":2,"i":"0"},
@@ -54,15 +102,6 @@ const testLayout = [
     {"x":4,"y":5,"w":2,"h":5,"i":"8"},
     {"x":6,"y":4,"w":2,"h":4,"i":"9"},
     {"x":8,"y":4,"w":2,"h":4,"i":"10"},
-    {"x":10,"y":4,"w":2,"h":4,"i":"11"},
-    {"x":0,"y":10,"w":2,"h":5,"i":"12"},
-    {"x":2,"y":10,"w":2,"h":5,"i":"13"},
-    {"x":4,"y":8,"w":2,"h":4,"i":"14"},
-    {"x":6,"y":8,"w":2,"h":4,"i":"15"},
-    {"x":8,"y":10,"w":2,"h":5,"i":"16"},
-    {"x":10,"y":4,"w":2,"h":2,"i":"17"},
-    {"x":0,"y":9,"w":2,"h":3,"i":"18"},
-    {"x":2,"y":6,"w":2,"h":2,"i":"19"}
 ];
 
 
@@ -82,6 +121,28 @@ export default {
 
             selectedTab: null,
         }
+    },
+    // setup() {
+    //     const pdfContent = ref(null);
+
+    //     const generatePdf = () => {
+    //     if (!pdfContent.value) return;
+
+    //     html2pdf()
+    //         .from(pdfContent.value)
+    //         .save();
+    //     };
+
+    //     return { pdfContent, generatePdf };
+    // },
+    setup() {
+        const downloadPdf = () => {
+        const doc = new jsPDF();
+        doc.text("Vue3에서 jsPDF 테스트!", 10, 10);
+        doc.save("example.pdf");
+        };
+
+        return { downloadPdf };
     },
     mounted() {
         this.index = this.layout.length;
@@ -110,6 +171,12 @@ export default {
             const item = {"x":0,"y":0,"w":2,"h":2,"i":this.index+"", whatever: "bbb"};
             this.index++;
             this.layout.push(item);
+        },
+        nowTime(){
+            return moment
+        },
+        goToAbout() {
+            this.$router.push('/download');
         }
     },
 }

@@ -11,6 +11,14 @@
     <hr/>
     <button @click="nowTime"></button>
     <hr/>
+    
+    <div>
+        <div>
+            <button @click="goToAbout">엑셀 다운로드</button>
+        </div>
+    </div>
+    <hr/>
+    
     <div style="width:100%;">
         <div>
             <div class="layoutJSON">
@@ -49,22 +57,6 @@
             </grid-layout>
         </div>
     </div>
-    <div>
-        <div>
-            <button @click="goToAbout">다운로드 페이지로 이동</button>
-        </div>
-    </div>
-    <v-app>
-        <v-main>
-            <v-container>
-                <v-data-table
-                :headers="headers"
-                :items="users"
-                class="elevation-1"
-                ></v-data-table>
-            </v-container>
-        </v-main>
-    </v-app>
 </template>
 
 <script>
@@ -72,6 +64,7 @@ import TestElement from './components/TestElement.vue';
 import { jsPDF } from 'jspdf';
 import moment from 'moment';
 import 'moment/locale/ko';   // 한국어 로케일 가져오기
+import axios from 'axios';
 
 moment.locale('ko');
 console.log('현재 로케일:', moment.locale()); // ko
@@ -176,7 +169,25 @@ export default {
             return moment
         },
         goToAbout() {
-            this.$router.push('/download');
+            axios.get('http://localhost:5174/file/excel-down', {responseType: "blob"})
+            .then(Response => {
+                // Blob 생성
+                const url = window.URL.createObjectURL(new Blob([Response.data]));
+
+                // a 태그 생성 및 클릭으로 다운로드 트리거
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'data.xlsx'); // 다운로드할 파일명 지정
+                document.body.appendChild(link);
+                link.click();
+
+                // 메모리 해제
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(err => {
+                console.error('파일 다운로드 중 오류 발생: ' + err);
+            })
         }
     },
 }
